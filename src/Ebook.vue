@@ -2,14 +2,14 @@
   <div class="ebook">
     <title-bar :showTitle="showMenuAndTitle"></title-bar>
     <div class="reader-wrap">
-      <div id="reader"></div>
+      <div id="reader" :style="{fontSize: fontSize + 'px'}"></div>
       <div class="mask">
         <div class="left" @click="prevPage"></div>
         <div class="center" @click="toggleMenu"></div>
         <div class="right" @click="nextPage"></div>
       </div>
     </div>
-    <menu-bar :showMenu="showMenuAndTitle"></menu-bar>
+    <menu-bar :showMenu="showMenuAndTitle" ref="hideSetting" @addFont="addFontSize" @minusFont="minusFontSize"></menu-bar>
   </div>
 </template>
 
@@ -25,7 +25,10 @@ export default {
   },
   data () {
     return {
-      showMenuAndTitle: false
+      maxFontSize: 24,
+      minFontSize: 12,
+      showMenuAndTitle: false,
+      fontSize: 16
     }
   },
   methods: {
@@ -33,7 +36,7 @@ export default {
     showEpub () {
       // 生成Book对象
       this.book = ePub(DOWNLOAD_URL)
-      console.log(this.book)
+      // console.log(this.book)
       // 通过Book对象生成Rendition对象
       this.rendition = this.book.renderTo('reader', {
         width: window.innerWidth,
@@ -41,6 +44,8 @@ export default {
       })
       // 通过Rendition.display渲染对象
       this.rendition.display()
+      // 获取Theme对象
+      this.themes = this.rendition.themes
     },
     prevPage () {
       if (this.rendition) {
@@ -54,6 +59,23 @@ export default {
     },
     toggleMenu () {
       this.showMenuAndTitle = !this.showMenuAndTitle
+      if (!this.showMenuAndTitle) {
+        this.$refs.hideSetting.hideSettingBar()
+      }
+    },
+    addFontSize () {
+      if (this.fontSize > this.maxFontSize) return
+      this.fontSize += 2
+      if (this.themes) {
+        this.themes.fontSize(this.fontSize + 'px')
+      }
+    },
+    minusFontSize () {
+      if (this.fontSize < this.minusFontSize) return
+      this.fontSize -= 2
+      if (this.themes) {
+        this.themes.fontSize(this.fontSize + 'px')
+      }
     }
   },
   mounted () {
